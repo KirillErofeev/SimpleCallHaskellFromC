@@ -6,6 +6,7 @@ import Foreign.Marshal (newArray)
 import Foreign.Ptr (Ptr(..))
 
 import Types
+import Algebra (act)
 
 foreign export ccall edwardHere :: IO ()
 edwardHere = putStr $ "Edward Kmett is here too!" 
@@ -59,7 +60,7 @@ haskellAct
     eBot0Radius eBot0Touch eBot0TnX eBot0TnY eBot0TnZ
     ballX ballY ballZ ballVelX ballVelY ballVelZ ballRadius
     currentTick myScore enemyScore
-        = toForeignType $ undefined game iAm enemy score where
+        = toForeignType $ act game iAm enemy score where
             game        = Game ball currentTick score
             ball        = Ball ballLoc ballVel ballRadius
             ballLoc     = Vec3 ballX ballY ballZ

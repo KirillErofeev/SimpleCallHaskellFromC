@@ -1,0 +1,30 @@
+module Rules where
+
+rROBOT_MIN_RADIUS                 = 1.0
+rROBOT_MAX_RADIUS                 = 1.05                    
+rROBOT_MAX_JUMP_SPEED             = 15.0
+rROBOT_ACCELERATION               = 100.0
+rROBOT_NITRO_ACCELERATION         = 30.0
+rROBOT_MAX_GROUND_SPEED           = 30.0
+rROBOT_ARENA_E                    = 0.0
+rROBOT_RADIUS                     = 1.0
+rROBOT_MASS                       = 2.0
+rTICKS_PER_SECOND                 = 60.0
+rMICROTICKS_PER_TICK              = 100.0
+rRESET_TICKS                      = 2.0 * rTICKS_PER_SECOND
+rBALL_ARENA_E                     = 0.7
+rBALL_RADIUS                      = 2.0
+rBALL_MASS                        = 1.0
+rMIN_HIT_E                        = 0.4
+rMAX_HIT_E                        = 0.5
+rMAX_ENTITY_SPEED                 = 100.0
+rMAX_NITRO_AMOUNT                 = 100.0
+rSTART_NITRO_AMOUNT               = 50.0
+rNITRO_POINT_VELOCITY_CHANGE      = 0.6
+rNITRO_PACK_X                     = 20.0
+rNITRO_PACK_Y                     = 1.0
+rNITRO_PACK_Z                     = 30.0
+rNITRO_PACK_RADIUS                = 0.5
+rNITRO_PACK_AMOUNT                = 100.0
+rNITRO_RESPAWN_TICKS              = 10.0 * rTICKS_PER_SECOND
+rGRAVITY                          = 30.0
