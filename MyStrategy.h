@@ -5,6 +5,8 @@
 #ifndef _MY_STRATEGY_H_
 #define _MY_STRATEGY_H_
 
+#include <vector>
+
 #include "Strategy.h"
 
 class MyStrategy : public Strategy {
@@ -12,6 +14,8 @@ public:
     MyStrategy();
 
     void act(const model::Robot& me, const model::Rules& rules, const model::Game& game, model::Action& action) override;
+
+    std::string custom_rendering() override;
 };
 
 #endif

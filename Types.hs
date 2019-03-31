@@ -7,7 +7,6 @@ import Foreign.Marshal (newArray)
 import Data.Semigroup (Semigroup, (<>))
 import Data.Monoid (Sum)
 
-t = "LOL"
 class DoubleLike a where
     toDouble :: a -> Double
 
