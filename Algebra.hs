@@ -9,8 +9,8 @@ import Debug.Trace (traceShow, trace)
 
 act :: Game -> IPlayer -> EnemyPlayer -> Score -> Action
 act game iAm enemy score
-    | otherwise        = r
     | ct `mod` 60 == 0 = trace debugPrint r
+    | otherwise        = r
         where
             r = condHitBall game iAm
             debugPrint = sec ++ bot ++ is
