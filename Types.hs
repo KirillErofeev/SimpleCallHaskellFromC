@@ -7,6 +7,8 @@ import Foreign.Marshal (newArray)
 import Data.Semigroup (Semigroup, (<>))
 import Data.Monoid (Sum)
 
+import Constants
+
 class DoubleLike a where
     toDouble :: a -> Double
 
@@ -79,7 +81,7 @@ instance Foldable Vec3 where
     foldMap f (Vec3 x y z) = mempty <> f x <> f y <> f z 
         where (<>) = mappend
 
-data Action = Action {actVelocity :: Vec3 Double, jS :: Double} deriving Show
+data Action a = Action {actVelocity :: Vec3 a, jS :: a} deriving Show
 
 data Collide = Collide {colDist :: Double, colNormal :: Vec3 Double}
                     deriving (Show)
@@ -105,7 +107,16 @@ getMate (IPlayer (Player _ mate)) = mate
 data Bot     = Bot { botId :: Int,      botLoc :: Vec3 Double, botVel :: Vec3 Double, botRad :: Double, botTouch :: Touch}
 
 data Touch  = Touch {isTouch :: Bool,    touchNormal :: Vec3 Double}
-data Ball    = Ball {ballLoc :: Vec3 Double, ballVel :: Vec3 Double, balRadius :: Double}
+data Ball    = Ball {ballLoc :: Vec3 Double, ballVel :: Vec3 Double}
+
+class Entity a where
+    arenaE :: a -> Double
+
+instance Entity Ball where
+    arenaE b = 0.7 
+
+instance Entity Bot where
+    arenaE b = 0.0 
 
 class MoveAble a where
     velocity :: a -> Vec3 Double
@@ -114,9 +125,9 @@ instance MoveAble Bot where
     velocity (Bot _ _ v _ _) = v
 
 instance MoveAble Ball where
-    velocity (Ball _ v _) = v
+    velocity (Ball _ v) = v
 
-instance MoveAble Action where
+instance MoveAble (Action Double) where
     velocity = actVelocity
 
 instance MoveAble IPlayer where
@@ -131,8 +142,8 @@ instance Character Bot where
     location (Bot _ l _ _ _) = l
 
 instance Character Ball where
-    radius   (Ball _ _ r) = r
-    location (Ball l _ _) = l
+    radius   (Ball _ _) = ballRadius
+    location (Ball l _) = l
 
 instance Character IPlayer where
     radius   = radius   . getMe

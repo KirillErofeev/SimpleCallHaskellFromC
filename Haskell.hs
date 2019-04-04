@@ -1,16 +1,10 @@
-module Haskell where
-
-import Types
+module HaskellRL where
 
 import Foreign.Marshal (newArray)
 import Foreign.Ptr (Ptr(..))
 
 import Types
 import Algebra (act)
-
-foreign export ccall edwardHere :: IO ()
-edwardHere = putStr $ "Edward Kmett is here too!" 
-
 
 foreign export ccall haskellAct ::
   --  me.Id  -> me.is_teammate -> me.x   -> me.y   -> me.z
@@ -62,7 +56,7 @@ haskellAct
     currentTick myScore enemyScore
         = toForeignType $ act game iAm enemy score where
             game        = Game ball currentTick score
-            ball        = Ball ballLoc ballVel ballRadius
+            ball        = Ball ballLoc ballVel
             ballLoc     = Vec3 ballX ballY ballZ
             ballVel     = Vec3 ballVelX ballVelY ballVelZ
             score       = Score myScore enemyScore

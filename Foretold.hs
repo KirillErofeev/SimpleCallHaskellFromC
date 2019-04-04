@@ -3,9 +3,20 @@ module Foretold where
 import Data.Maybe (isJust, fromJust)
 import Types
 import Constants
+import Debug.Trace (traceShow, trace)
 
-clamp v m | norm v > m = (m / norm v) *| v
-          | otherwise  = v
+debugPredict game iAm enemy time dt = trace debugPrint ball' where
+    ball'      = Ball l v
+    (l,v)      = move ballNow dt
+    --debugPrint = show (location ballNow) ++ " " ++ show l
+    debugPrint = show (location ballNow) ++ " " ++ show l
+    ballNow = ball$game
+
+predict game iAm enemy time dt = trace debugPrint ball' where
+    ball'      = Ball l v
+    (l,v)      = move ballNow dt
+    debugPrint = show (location ballNow) ++ " " ++ show l
+    ballNow = ball$game
 
 move e dt = (Vec3 (x locE)   ly (z locE), 
              Vec3 (x clampV) vy (z clampV)) where
@@ -14,6 +25,18 @@ move e dt = (Vec3 (x locE)   ly (z locE),
     locE = location e + (dt *| clampV)
     ly = (y locE) - gravity*dt*dt/2
     
+clamp v m | norm v > m = (m / norm v) *| v
+          | otherwise  = v
+
+collideWithArena e radiusChangeSpeed = (ePos, eVel) where
+    Collide d n = collideArena $ location e
+    penetration = radius e - d
+    ePos | penetration > 0 = location e + (penetration*|n)
+         | otherwise       = location e
+    vel = velocity e `dot` n - radiusChangeSpeed
+    eVel | penetration > 0 && vel < 0 = velocity e - (((1 + arenaE e) *| velocity e) * n)
+         | otherwise                  = velocity e
+
 collidePlane point planePoint planeNormal =
     Collide d n where
         d = (point - planePoint) `dot` planeNormal

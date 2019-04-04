@@ -13,4 +13,5 @@ goalHeight     = 10.0
 goalSideRadius = 1.0
 maxEntitySpeed = 100.0
 gravity        = 30.0
+ballRadius     = 2.0
 

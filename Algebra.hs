@@ -3,21 +3,18 @@
 module Algebra where
 
 import Types
+import Foretold
 
 import Debug.Trace (traceShow, trace)
 --traceShow = flip const
 
-act :: Game -> IPlayer -> EnemyPlayer -> Score -> Action
-act game iAm enemy score
-    | ct `mod` 60 == 0 = trace debugPrint r
-    | otherwise        = r
-        where
-            r = condHitBall game iAm
-            debugPrint = sec ++ bot ++ is
-            sec = show ct ++ "s "
-            bot = (show $ (botId . getMe) $ iAm) ++ ": "
-            is = show $ isIAmCloserToBall game iAm
-            ct = currentTick game
+act :: Game -> IPlayer -> EnemyPlayer -> Score -> Action Double
+act game iAm enemy score = r where
+    r = f (predict game iAm enemy (1/60) (1/60)) zeroAct
+    f (Ball _ _) a = a
+
+zeroAct = zeroAction
+zeroAction = Action (Vec3 0 0 0) 0.0
 
 --isIAmCloserToBall game iAm
 --     | myDist < mateDist = False
@@ -43,11 +40,11 @@ isNotAutogoal p game = z (bl - location p) >= (-1) where
     bl = (location . ball $ game)
 
 condHitBall game iAm = action where
+    action | isIAmCloserToBall game iAm = Action vOff jumpOff
+           | otherwise                  = Action vDef jumpDef
     bl = (location . ball $ game)
     distanceToBall = distance bl (location iAm)
     isNotAutogoal = z (bl - location iAm) >= (-1)
-    action | isIAmCloserToBall game iAm = Action vOff jumpOff
-           | otherwise                  = Action vDef jumpDef
     vDef  = velocity $ goTo iAm defPs
     defPs = (0.5*|(bl - Vec3 0 0 (-30))) + Vec3 0 0 (-30)
 
