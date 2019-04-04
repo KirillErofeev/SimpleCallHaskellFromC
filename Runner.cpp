@@ -9,7 +9,6 @@ using namespace std;
 
 int main(int argc, char* argv[]) {
     hs_init(&argc, &argv);
-    edwardHere();
     if (argc == 4) {
         Runner runner(argv[1], argv[2], argv[3]);
         runner.run();
