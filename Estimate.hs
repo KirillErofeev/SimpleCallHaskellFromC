@@ -9,13 +9,15 @@ estimate :: Game -> IPlayer -> EnemyPlayer -> Double
 
 estimate game iAm enemy | z bl > arenaDepth/2 + ballRadius = maxPoints
                         | z bl < -arenaDepth/2 - ballRadius = minPoints
-                     -- | -arenaDepth/2 < z bl < arenaDepth/2 = 
-                        | otherwise = z bl * totalPoints / arenaDepth where
+                        | z bl < 0 = z bl * totalPoints / arenaDepth + abs(x bl) * 3
+                        | z bl > 0 = z bl * totalPoints / arenaDepth - abs(x bl) * 3
+                        | otherwise = 0 where
+                            bot0en = getEnemyBot0 enemy
                             bl = location (ball game)
                             meLoc = location (getMe iAm)
                             mateLoc = location (getMate iAm)
-                            -- bot1Loc = location (bot0 enemy)
-                            -- bot2Loc = location (bot1 enemy)
+                            bot0Loc = location (bot0en)
+                            -- bot1Loc = location (bot1 enemy)
                             -- fromdistance (Vec3 0 0 (-arenaDepth/2)) (bl)
                             totalPoints = 2000
                             minPoints = -1000
@@ -24,11 +26,11 @@ estimate game iAm enemy | z bl > arenaDepth/2 + ballRadius = maxPoints
 
 uncurry3 f (a,b,c) = f a b c
 traceShowStatic f a = trace (show' a ++ " ESTIMATION: " ++ show (f a)) ()
-test = traceShowStatic (uncurry3 estimate) <$> [(posToGame (Vec3 0 0 (-43)), zero, zero)
-                         ,(posToGame (Vec3 0 0 (-11)), zero, zero)
+test = traceShowStatic (uncurry3 estimate) <$> [(posToGame (Vec3 10 0 (-43)), zero, zero)
+                         ,(posToGame (Vec3 (-30) 0 (-40)), zero, zero)
                          ,(posToGame (Vec3 0 0 (0)), zero, zero)
                          ,(posToGame (Vec3 0 0 (10)), zero, zero)
-                         ,(posToGame (Vec3 0 0 (45)), zero, zero)
+                         ,(posToGame (Vec3 30 0 (40)), zero, zero)
                           ]
 
 ballToGame ball = Game ball 0 (Score 0 0)
