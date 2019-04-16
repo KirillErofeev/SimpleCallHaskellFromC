@@ -34,7 +34,7 @@ class MeasurableSpace v m where
 instance Floating a => MeasurableSpace Vec3 a where
     distance v1 v0 = norm $ v0 - v1
 
-data Vec3 a = Vec3 {x :: a, y :: a, z :: a} 
+data Vec3 a = Vec3 {x :: !a, y :: !a, z :: !a} 
     deriving (Eq, Ord)
 
 instance Show a => Show (Vec3 a) where
@@ -85,8 +85,15 @@ instance Foldable Vec3 where
     foldMap f (Vec3 x y z) = mempty <> f x <> f y <> f z 
         where (<>) = mappend
 
-data Action a = Action {actVelocity :: Vec3 a, jS :: a} 
+data Action a = Action {actVelocity :: !(Vec3 a), jS :: !a} 
     deriving (Show, Eq)
+
+goTo iAm point = Action v 0 where
+    v = 1e3 *| xzPrj (point - location iAm)
+
+actFromX x = Action (Vec3 x 0 0) 0 
+actSetZ (Action v j) z = Action (v {z=z}) j
+actSetJ a j = a {jS=j}
 
 zeroAct = (zeroAction, [])
 zeroAction = Action (Vec3 0 0 0) 0.0
@@ -96,13 +103,19 @@ instance Foldable Action where
     foldr f m (Action v jump) = foldr f (jump `f` m) v
 
 
-data Collide = Collide {colDist :: Double, colNormal :: Vec3 Double}
+data Collide = Collide {colDist :: !Double, colNormal :: !(Vec3 Double)}
                     deriving (Show)
 
-data Move a = Move {myAction :: Action a, mateAction :: Action a} 
+data Move a = Move {myAction :: !(Action a), mateAction :: !(Action a)} 
     deriving (Show, Eq)
 
-data Answer a = Answer {getMove :: Move a, getStored :: [a]}
+moveToIAm (Move my mate) (IPlayer (Player b0 b1)) = 
+    IPlayer $ Player (b0 {possAct=my}) (b1 {possAct=mate}) 
+
+setEnemyAct a (EnemyPlayer (Player b0 b1)) = 
+    EnemyPlayer $ Player (b0 {possAct=a}) (b1 {possAct=a}) 
+
+data Answer a = Answer {getMove :: !(Move a), getStored :: !([a])}
 
 instance ForeignType (Answer Double) where
     toForeignType (Answer m s) = toForeignType $ toList m ++ toList s
@@ -147,32 +160,33 @@ instance (Foldable a, Foldable b) => ForeignType (a Double,b Double) where
 --    toForeignType (a,b) = toForeignType $ foldr (:) [] a ++ foldr (:) [] b
 
 
-data Game = Game {ball :: Ball, currentTick :: Int, score :: Score}
+data Game = Game {ball :: !(Ball), currentTick :: !Int, score :: !Score}
 
 setBall (Game b ct score) ball = Game ball ct score
 setBall' (Game b ct score) ball | isNumber ball = Game ball ct score
                                | otherwise = trace (show ball) undefined
 
-data Score   = Score {myScore :: Int, enemyScore :: Int}
+data Score   = Score {myScore :: !Int, enemyScore :: !Int}
 
-data Player         = Player {bot0 :: Bot, bot1 :: Bot}
+data Player         = Player {bot0 :: !Bot, bot1 :: !Bot}
 newtype EnemyPlayer = EnemyPlayer {getEnemyPlayer :: Player}
 getEnemyBot0 = bot0 . getEnemyPlayer
 getEnemyBot1 = bot1 . getEnemyPlayer
 newtype IPlayer     = IPlayer Player
 getMe   (IPlayer (Player me _  )) = me
 getMate (IPlayer (Player _ mate)) = mate
+setMyAct a' (IPlayer (Player b b0)) = IPlayer (Player (b {possAct = a'}) b0)
 
-data Bot = Bot {botId :: Int,      
-                botLoc :: Vec3 Double, 
-                botVel :: Vec3 Double, 
-                botRad :: Double, 
-                botTouch :: Touch, 
-                botRadiusChangeSpeed :: Double,
-                possAct :: Action Double}
+data Bot = Bot {botId :: !Int,      
+                botLoc :: !(Vec3 Double), 
+                botVel :: !(Vec3 Double), 
+                botRad :: !Double, 
+                botTouch :: !Touch, 
+                botRadiusChangeSpeed :: !Double,
+                possAct :: !(Action Double)}
 
-data Touch  = Touch {isTouch :: Bool, touchNormal :: Vec3 Double}
-data Ball    = Ball {ballLoc :: Vec3 Double, ballVel :: Vec3 Double} 
+data Touch  = Touch {isTouch :: !Bool, touchNormal :: !(Vec3 Double)}
+data Ball    = Ball {ballLoc :: !(Vec3 Double), ballVel :: !(Vec3 Double)} 
     deriving (Eq)
 
 instance Show Ball where
@@ -231,15 +245,17 @@ class Character a => PredictableCharacter a where
     setRadiusChangeSpeed :: Double -> a -> a
     setTouch :: Touch -> a -> a
     radiusChangeSpeed :: a -> Double 
+    isBot :: a -> Bool
 
 instance PredictableCharacter Bot where
     setVelocity v' (Bot a b v c d rcs act) = Bot a b v' c d rcs act 
     setLocation l' (Bot a l v c d rcs act) = Bot a l' v c d rcs act
     setRadius   r' (Bot a l v r d rcs act) = Bot a l v r' d rcs act
     setTouch   t' (Bot a l v r t rcs act)  = Bot a l v r t' rcs act
-    setRadiusChangeSpeed rcs' (Bot a l v r d rcs act) =
-        Bot a l v r d rcs' act
+    setRadiusChangeSpeed rcs' b = --traceShow rcs' $ 
+        b {botRadiusChangeSpeed = rcs'}
     radiusChangeSpeed (Bot _ _ _ _ _ rcs _) = rcs
+    isBot _ = True
 
 instance PredictableCharacter Ball where
     setVelocity v' (Ball l v) = Ball l  v'
@@ -248,17 +264,86 @@ instance PredictableCharacter Ball where
     setRadiusChangeSpeed = flip const
     setTouch             = flip const 
     radiusChangeSpeed b  = 0.0
+    isBot _ = False
 
 traceShow'  x = uncurry traceShow $ (\a->(a,a)) x
 checkNumberTrace x | not . isNumber $ x = traceShow' x 
                    | otherwise          = x
 
-data Prediction = Prediction {predGame :: Game, 
-    predIAm :: IPlayer, predEnemy :: EnemyPlayer}
+data Prediction = Prediction {predGame :: !Game, 
+    predIAm :: !IPlayer, predEnemy :: !EnemyPlayer}
 
-data Proposition = Proposition {proposeMe     :: Action Double, 
-                                proposeMate   :: Action Double,
-                                proposeEnemy0 :: Action Double,
-                                proposeEnemy1 :: Action Double}
+predBallLoc = location . ball . predGame  
+predBallVel = velocity . ball . predGame  
+predMyLoc   = location . predIAm
+predMyVel   = velocity . predIAm
+
+data Proposition = Proposition {proposeMe     :: !(Action Double), 
+                                proposeMate   :: !(Action Double),
+                                proposeEnemy0 :: !(Action Double),
+                                proposeEnemy1 :: !(Action Double)}
 
 predBall = ball . predGame  
+
+class ShowStatic a where
+    show' :: a -> String
+
+instance ShowStatic Game where
+    show' (Game ball _ _) = show' ball
+
+instance ShowStatic Ball where
+    show' (Ball l v) = "Ball: " ++ show l
+
+instance ShowStatic IPlayer where
+    show' i = "I: " ++ show (location i) ++ " M: " ++ show (location . getMate $ i)  
+
+instance ShowStatic EnemyPlayer where
+    show' (EnemyPlayer e) = "E: " ++ show (location . bot0 $ e) ++ " | " ++ show (location . bot1 $ e)  
+
+instance (ShowStatic a, ShowStatic b, ShowStatic c) => ShowStatic (a,b,c) where
+    show' (a,b,c) = show' a ++ " " ++ show' b ++ " " ++ show' c
+
+class Zero a where
+    zero :: a
+
+instance Zero (Vec3 Double) where
+    zero = Vec3 0 0 0
+
+instance Zero Ball where
+    zero = Ball zero zero
+
+instance Zero Player where
+    zero = Player zero zero
+
+instance Zero IPlayer where
+    zero = IPlayer $ Player zero zero
+
+instance Zero EnemyPlayer where
+    zero = EnemyPlayer $ Player zero zero
+
+instance Zero Double where
+    zero = 0.0
+
+instance Zero Int where
+    zero = 0
+
+instance Zero (Action Double) where
+    zero = Action zero zero
+
+instance Zero (Move Double) where
+    zero = Move zero zero
+
+instance Zero Bot where
+    zero = Bot zero zero zero zero zero zero zero
+
+instance Zero Touch where
+    zero = Touch False zero
+
+instance Zero Score where
+    zero = Score 0 0
+
+instance Zero Game where
+    zero = Game zero zero zero
+
+instance Zero Prediction where
+    zero = Prediction zero zero zero

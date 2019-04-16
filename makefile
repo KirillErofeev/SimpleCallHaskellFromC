@@ -1,9 +1,10 @@
 ifeq ($(CXX),g++)
-    GHC_INCLUDE = /usr/lib/ghc/include
+    GHC_INCLUDE = /usdr/lib/ghc/include
 endif
 ifeq ($(CXX),clang)
     GHC_INCLUDE = /usr/local/Cellar/ghc/8.6.4/lib/ghc-8.6.4/include
 endif
+@echo $(GHC_INCLUDE)
 
 test: clean all; ./codeball2018/codeball2018 --p1 tcp-31003 --p2 helper --p1-dump ../out --no-countdown --log-file ../log --results-file ../r --duration 1801 & (sleep 1 && ./a.out)
 
