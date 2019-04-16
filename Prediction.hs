@@ -5,6 +5,7 @@ import Types
 import Foretold
 import Estimate
 import Data.Foldable (foldl')
+import Constants
 
 import Debug.Trace (traceShow, trace)
 
@@ -80,5 +81,5 @@ goalCenter = Vec3 x y z where
     y = (goalHeight)
     z = arenaWidth/2
 
-freeKick game executor goal time 
-    | isReadyForKick = goToBall
+--freeKick game executor goal time 
+--    | isReadyForKick = goToBall
