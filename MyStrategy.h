@@ -8,8 +8,6 @@
 #include <ctime>
 #include <vector>
 
-#include "algebra.h"
-
 #include "Strategy.h"
 
 class MyStrategy : public Strategy {
@@ -21,19 +19,9 @@ public:
 
     std::string custom_rendering() override;
 
-    double maxBallV=0;
-    double maxActTime=0;
-    void updateMaxBallV(const model::Robot& me, const model::Game& game);
-    void updateMaxActTime(double time);
-    //double minBallDistance=10000;
-    //void updateMinBallDistance(const model::Robot& me, const model::Game& game);
-    
-    bool isIdAssigned;
-    int fId, sId;
     std::string debug;
     std::clock_t allTime;
 
-    std::vector<Prediction> predictions;
     std::vector<double> stored;
     std::vector<double> stored0;
     bool isStrategyComputed;
