@@ -1,12 +1,9 @@
 #include <ctime>
 #include <iostream>
 
-#include "consts.h"
-#include "algebra.h"
-
 #include "MyStrategy.h"
 
-#include "HaskellRL_stub.h"
+#include "Haskell_stub.h"
 
 using namespace model;
 

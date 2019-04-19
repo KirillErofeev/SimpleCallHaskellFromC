@@ -6,7 +6,7 @@ import Foreign (peek)
 import Control.Concurrent (threadDelay)
 
 import Types
-import Algebra (act)
+import Kickoff (act)
 
 foreign export ccall haskellAct ::
   --  me.Id  -> me.is_teammate -> me.x   -> me.y   -> me.z

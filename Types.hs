@@ -34,6 +34,9 @@ class MeasurableSpace v m where
 instance Floating a => MeasurableSpace Vec3 a where
     distance v1 v0 = norm $ v0 - v1
 
+--dist :: Vec3 Double -> Vec3 Double -> Double
+dist v1 v0 = norm $ (location v0) - (location v1)
+
 data Vec3 a = Vec3 {x :: !a, y :: !a, z :: !a} 
     deriving (Eq, Ord)
 
@@ -89,7 +92,7 @@ data Action a = Action {actVelocity :: !(Vec3 a), jS :: !a}
     deriving (Show, Eq)
 
 goTo iAm point = Action v 0 where
-    v = 1e3 *| xzPrj (point - location iAm)
+    v = 1e3 *| xzPrj (location point - location iAm)
 
 actFromX x = Action (Vec3 x 0 0) 0 
 actSetZ (Action v j) z = Action (v {z=z}) j
@@ -210,6 +213,9 @@ instance Entity Bot where
 class MoveAble a where
     velocity :: a -> Vec3 Double
 
+instance MoveAble (Vec3 Double) where
+    velocity = id
+
 instance MoveAble Bot where
     velocity (Bot _ _ v _ _ _ _) = v
 
@@ -233,6 +239,9 @@ instance Character Bot where
 instance Character Ball where
     radius   (Ball _ _) = ballRadius
     location (Ball l _) = l
+instance Character (Vec3 Double) where
+    radius   v = norm v
+    location = id
 
 instance Character IPlayer where
     radius   = radius   . getMe
